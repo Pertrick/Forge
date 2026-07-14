@@ -5,7 +5,7 @@ namespace Forge.Domain.Entities
     public sealed class Employee : Entity
     {
        public string Name { get; private set; }
-       public Guid departmentId { get; private set; }
+       public Guid DepartmentId { get; private set; }
        private readonly List<Compensation> _compensations = new();
        public IReadOnlyList<Compensation> Compensations => _compensations.AsReadOnly();
        public bool IsActive { get; private set; }
