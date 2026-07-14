@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Forge.Infrastructure</RootNamespace>
+    <AssemblyName>Forge.Infrastructure</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Forge.Domain\Forge.Domain.csproj" />
+    <ProjectReference Include="..\Forge.Contracts\Forge.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

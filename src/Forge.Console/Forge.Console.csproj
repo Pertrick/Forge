@@ -10,7 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Forge.Domain\Forge.Domain.csproj" />
+    <ProjectReference Include="..\Forge.Contracts\Forge.Contracts.csproj" />
+    <ProjectReference Include="..\Forge.Infrastructure\Forge.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
