@@ -9,11 +9,13 @@ namespace Forge.Domain.Entities
        private readonly List<Compensation> _compensations = new();
        public IReadOnlyList<Compensation> Compensations => _compensations.AsReadOnly();
        public bool IsActive { get; private set; }
+       public Guid PositionId { get; private set; }
 
-        public Employee(string name, Guid departmentId)
+        public Employee(string name, Guid departmentId, Guid positionId)
         {
             SetName(name);
             AssignDepartment(departmentId);
+            AssignInitialPosition(positionId);
             Hire();
         }
 
@@ -35,30 +37,34 @@ namespace Forge.Domain.Entities
                 throw new ArgumentException("Department ID cannot be empty.", nameof(departmentId));
             }
 
-            this.departmentId = departmentId;
+            DepartmentId = departmentId;
         }
 
-        public void AddCompensation(Compensation compensation)
+        public void AddCompensation(CompensationType type, Money money, DateTime? effectiveDate = null, DateTime? endDate = null)
         {
-            if (compensation is null)
+            var compensation = new Compensation(type, money, effectiveDate, endDate);
+            var activeCompensation = _compensations.FirstOrDefault(c => c.IsActive && c.Type == type);
+
+            if (activeCompensation != null)
             {
-                throw new ArgumentException("Compensation cannot be null.", nameof(compensation));
+                activeCompensation.EndCompensation(DateTime.UtcNow);
             }
 
             _compensations.Add(compensation);
-        }
+        }   
 
-        public void AddCompensations(IEnumerable<Compensation> compensations)
+        // Child-entity mutation flows through the aggregate root: callers name the
+        // compensation by identity and the root reaches it, rather than mutating a
+        // Compensation reference directly.
+        public void EndCompensation(Guid compensationId, DateTime endDate)
         {
-            if(compensations is null)
+            var compensation = _compensations.FirstOrDefault(c => c.Id == compensationId);
+            if (compensation is null)
             {
-                throw new ArgumentException("Compensations cannot be null or empty.", nameof(compensations));
+                throw new InvalidOperationException("Compensation not found for this employee.");
             }
 
-            foreach (var compensation in compensations)
-            {
-                AddCompensation(compensation);
-            }
+            compensation.End(endDate);
         }
 
         private void SetIsActive(bool value)
@@ -71,14 +77,60 @@ namespace Forge.Domain.Entities
             IsActive = value;
         }   
 
-        public void Hire()
+        private void Hire()
         {
+            if(IsActive)
+            {
+              throw new InvalidOperationException("Employee has already been hired.");
+            }
+
             SetIsActive(true);
         }
 
-        public void TerminateEmployment()
+        public void Terminate()
         {
             SetIsActive(false);
+        }
+
+        private void SetPosition(Guid positionId)
+        {
+            PositionId = positionId;
+        }
+
+        private void AssignInitialPosition(Guid positionId)
+        {
+            if (positionId == Guid.Empty)
+            {
+                throw new ArgumentException("Position ID cannot be empty.", nameof(positionId));
+            }
+
+            SetPosition(positionId);
+        }
+
+
+        private void ChangePosition(Guid newPositionId)
+        {
+            if (newPositionId == Guid.Empty)
+            {
+                throw new ArgumentException("New position ID cannot be empty.", nameof(newPositionId));
+            }
+
+            if (newPositionId == PositionId)
+            {
+                throw new InvalidOperationException("New position ID cannot be the same as the current position ID.");
+            }
+
+            if(IsActive == false)
+            {
+                throw new InvalidOperationException("Cannot change position for a terminated employee.");
+            }
+
+            SetPosition(newPositionId);
+        }
+
+        public void Promote(Guid newPositionId)
+        {
+            ChangePosition(newPositionId);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace Forge.Domain.Entities
         public DateTime? EndDate { get; private set; }
         public bool IsActive => !EndDate.HasValue || EndDate.Value > DateTime.UtcNow;
 
-        public Compensation(CompensationType type, Money money, DateTime? effectiveDate = null, DateTime? endDate = null)
+        internal Compensation(CompensationType type, Money money, DateTime? effectiveDate = null, DateTime? endDate = null)
         {
             SetType(type);
             SetMoney(money);
@@ -82,6 +82,10 @@ namespace Forge.Domain.Entities
 
         private void SetEndDate(DateTime? endDate)
         {
+            if(EndDate.HasValue){
+                throw new InvalidOperationException("Cannot set end date for an already ended compensation.");
+            }
+
             if (endDate.HasValue && endDate.Value < EffectiveDate)
             {
                 throw new ArgumentException("End date cannot be before the effective date.", nameof(endDate));
@@ -90,9 +94,14 @@ namespace Forge.Domain.Entities
             EndDate = endDate;
         }
 
-        public void End(DateTime endDate)
+
+        // A Compensation is a child entity of the Employee aggregate; it may only be
+        // ended through the Employee root, never directly by callers outside the domain.
+        // Hence internal (root-reachable) rather than public. See Employee.EndCompensation.
+        internal void End(DateTime endDate)
         {
             SetEndDate(endDate);
         }
+  
     }
 }
