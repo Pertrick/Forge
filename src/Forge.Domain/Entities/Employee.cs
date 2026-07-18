@@ -30,7 +30,7 @@ namespace Forge.Domain.Entities
             Name = name;
         }
 
-        public void AssignDepartment(Guid departmentId)
+        private void AssignDepartment(Guid departmentId)
         {
             if (departmentId == Guid.Empty)
             {
@@ -47,7 +47,7 @@ namespace Forge.Domain.Entities
 
             if (activeCompensation != null)
             {
-                activeCompensation.EndCompensation(DateTime.UtcNow);
+                activeCompensation.End(DateTime.UtcNow);
             }
 
             _compensations.Add(compensation);
@@ -132,5 +132,23 @@ namespace Forge.Domain.Entities
         {
             ChangePosition(newPositionId);
         }
+
+        public void TransferToDepartment(Guid newDepartmentId)
+        {
+            if(newDepartmentId == DepartmentId)
+            {
+                throw new InvalidOperationException("An employee cannot be transferred to the same department.");
+            }
+
+            if(IsActive == false)
+            {
+                throw new InvalidOperationException("Cannot transfer a terminated employee.");
+            }
+
+            AssignDepartment(newDepartmentId);
+        }
+
+
+
     }
 }
