@@ -1,6 +1,7 @@
+using Forge.Domain.Common;
+
 namespace Forge.Domain.Entities
 {
-    using Forge.Domain.Common;
     
     public sealed class Position : Entity
     {

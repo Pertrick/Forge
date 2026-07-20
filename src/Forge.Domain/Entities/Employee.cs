@@ -10,6 +10,9 @@ namespace Forge.Domain.Entities
        public IReadOnlyList<Compensation> Compensations => _compensations.AsReadOnly();
        public bool IsActive { get; private set; }
        public Guid PositionId { get; private set; }
+       private readonly List<TrainingRecord> _trainingRecords = new();
+       public IReadOnlyList<TrainingRecord> TrainingRecords =>  _trainingRecords.AsReadOnly();
+
 
         public Employee(string name, Guid departmentId, Guid positionId)
         {
@@ -149,6 +152,10 @@ namespace Forge.Domain.Entities
         }
 
 
+        public void AddTrainingRecord(Guid courseId, GradeType grade){
+            var record = new TrainingRecord(courseId, grade);
+            _trainingRecords.Add(record);
+        }
 
     }
 }
